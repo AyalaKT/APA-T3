@@ -1,87 +1,130 @@
 """
     Tercera tarea de APA - manejo de vectores
 
-    Nombre y apellidos:
+    Nombre y apellidos: Eric Ayala
+
+    Pruebas
+
+    >>> Vector([1, 2, 3]) * 2
+    Vector([2, 4, 6])
+
+    >>> 2 * Vector([1, 2, 3])
+    Vector([2, 4, 6])
+
+    >>> Vector([1, 2, 3]) * Vector([4, 5, 6])
+    Vector([4, 10, 18])
+
+    >>> Vector([1, 2, 3]) @ Vector([4, 5, 6])
+    32
+
+    >>> Vector([2, 1, 2]) // Vector([0.5, 1, 0.5])
+    Vector([1.0, 2.0, 1.0])
+
+    >>> Vector([2, 1, 2]) % Vector([0.5, 1, 0.5])
+    Vector([1.0, -1.0, 1.0])
+
+    >>> Vector([1, 0, 0]) @ Vector([0, 1, 0])
+    0
+
+    >>> Vector([5, 5, 5]) - 2
+    Vector([3, 3, 3])
 """
 
 class Vector:
     """
-    Clase usada para trabajar con vectores sencillos
+    Clase para representar y operar con vectores básicos.
     """
-    def __init__(self, iterable):
-        """
-        Costructor de la clase Vector. Su único argumento es un iterable con las componentes del vector.
-        """
 
-        self.vector = [valor for valor in iterable]
-
-        return None      # Orden superflua
+    def __init__(self, componentes):
+        """
+        Constructor que recibe un iterable con las componentes del vector.
+        """
+        self.valores = list(componentes)
 
     def __repr__(self):
         """
-        Representación *oficial* del vector que permite construir uno nuevo idéntico mediante corta-y-pega.
+        Representación oficial del vector (útil para debugging).
         """
-
-        return 'Vector(' + repr(self.vector) + ')'
+        return f"Vector({repr(self.valores)})"
 
     def __str__(self):
         """
-        Representación *bonita* del vector.
+        Representación legible del vector.
         """
+        return str(self.valores)
 
-        return str(self.vector)
+    def __getitem__(self, indice):
+        return self.valores[indice]
 
-    def __getitem__(self, key):
-        """
-        Devuelve un elemento o una loncha del vector.
-        """
-
-        return self.vector[key]
-
-    def __setitem__(self, key, value):
-        """
-        Fija el valor de una componente o loncha del vector.
-        """
-
-        self.vector[key] = value
+    def __setitem__(self, indice, valor):
+        self.valores[indice] = valor
 
     def __len__(self):
-        """
-        Devuelve la longitud del vector.
-        """
+        return len(self.valores)
 
-        return len(self.vector)
-
-    def __add__(self, other):
+    def __add__(self, otro):
         """
-        Suma al vector otro vector o una constante.
+        Suma del vector con una constante o con otro vector.
         """
-
-        if isinstance(other, (int, float, complex)):
-            return Vector(uno + other for uno in self)
+        if isinstance(otro, (int, float, complex)):
+            return Vector(valor + otro for valor in self)
         else:
-            return Vector(uno + otro for uno, otro in zip(self, other))
+            return Vector(a + b for a, b in zip(self, otro))
 
     __radd__ = __add__
 
     def __neg__(self):
-        """
-        Invierte el signo del vector.
-        """
+        return Vector(-valor for valor in self)
 
-        return Vector([-1 * item for item in self])
+    def __sub__(self, otro):
+        return -(-self + otro)
 
-    def __sub__(self, other):
-        """
-        Resta al vector otro vector o una constante.
-        """
+    def __rsub__(self, otro):
+        return -self + otro
 
-        return -(-self + other)
-
-    def __rsub__(self, other):     # No puede ser __rsub__ = __sub__
+    def __mul__(self, otro):
         """
-        Método reflejado de la resta, usado cuando el primer elemento no pertenece a la clase Vector.
+        Producto por escalar o producto componente a componente.
         """
+        if isinstance(otro, (int, float, complex)):
+            return Vector(valor * otro for valor in self)
+        else:
+            return Vector(a * b for a, b in zip(self, otro))
 
-        return -self + other
+    __rmul__ = __mul__
+
+    def __matmul__(self, otro):
+        """
+        Producto escalar de dos vectores.
+        """
+        return sum(a * b for a, b in zip(self, otro))
+
+    __rmatmul__ = __matmul__
+
+    def __floordiv__(self, otro):
+        """
+        Componente paralela (proyección tangencial) del vector.
+        """
+        coef = (self @ otro) / (otro @ otro)
+        return coef * otro
+
+    def __rfloordiv__(self, otro):
+        coef = (otro @ self) / (self @ self)
+        return coef * self
+
+    def __mod__(self, otro):
+        """
+        Componente perpendicular del vector (proyección normal).
+        """
+        return self - (self // otro)
+
+    def __rmod__(self, otro):
+        return otro - (otro // self)
+
+
+# --- Pruebas automáticas con doctest ---
+import doctest
+
+if __name__ == "__main__":
+    doctest.testmod(verbose=True)
 
